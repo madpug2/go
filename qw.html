@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON API Tester</title>
+    <style>
+        /* Add your CSS styling here */
+        body {
+            display: flex;
+        }
+
+        .column {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .input-box {
+            width: 100%;
+            height: 200px;
+        }
+
+        #outputResponse {
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+
+        .loading-indicator {
+            font-size: 20px;
+            color: blue;
+        }
+
+        /* Style for the "Get the code" button */
+        #getCodeButton {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="column">
+        <div class="section">
+            <div class="section-title">Input JSON</div>
+            <textarea id="inputJSON" class="input-box"></textarea>
+        </div>
+        <div class="section">
+            <div class="section-title">Expected Output JSON</div>
+            <textarea id="expectedOutputJSON" class="input-box"></textarea>
+        </div>
+        <div class="section">
+            <button id="getCodeButton" onclick="getCode()">Get the code</button>
+        </div>
+    </div>
+    <div class="column">
+        <div class="section">
+            <div class="section-title">Response</div>
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;">Loading...  Expected wait time is 30 seconds</div>
+            <pre id="outputResponse"></pre>
+        </div>
+    </div>
+
+    <script>
+        function isJSONValid(jsonString) {
+            try {
+                JSON.parse(jsonString);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function showLoadingIndicator() {
+            document.getElementById("loadingIndicator").style.display = "block";
+            document.getElementById("outputResponse").innerText = "";
+        }
+
+        function hideLoadingIndicator() {
+            document.getElementById("loadingIndicator").style.display = "none";
+        }
+
+        function formatResponseData(responseData) {
+            return JSON.stringify(responseData, null, 2)
+                .replace(/\\"/g, '"')
+                .replace(/\\n/g, '\n')
+		.replace(/Sure!/g, '')
+		.replace(/Certainly!/g, '')
+                .replace(/"outPut":/g, ''); // Replace "outPut": with a blank space
+        }
+
+        function getCode() {
+            const inputJSON = document.getElementById("inputJSON").value;
+            const expectedOutputJSON = document.getElementById("expectedOutputJSON").value;
+
+            if (!isJSONValid(inputJSON)) {
+                alert("Invalid input JSON!");
+                return;
+            }
+
+            if (!isJSONValid(expectedOutputJSON)) {
+                alert("Invalid expected output JSON!");
+                return;
+            }
+
+            showLoadingIndicator();
+
+            // Make the API call to the endpoint and display the response
+            // Replace {inpout from section 20} and {inpout from section 1} with actual values
+
+            const endpointURL = "https://madpugget.pythonanywhere.com/go";
+            const queryParam = `text=write a dataweave code to get this output ${expectedOutputJSON} from given input ${inputJSON}`;
+
+            fetch(`${endpointURL}?${queryParam}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    const formattedData = formatResponseData(data);
+                    document.getElementById("outputResponse").innerText = formattedData;
+                })
+                .catch((error) => {
+                    document.getElementById("outputResponse").innerText = "Error fetching data: " + error;
+                })
+                .finally(() => {
+                    hideLoadingIndicator();
+                });
+        }
+    </script>
+</body>
+</html>
